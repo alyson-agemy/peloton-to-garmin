@@ -24,6 +24,7 @@ namespace Peloton
 		Task<UserData> GetUserDataAsync();
 		Task<PelotonChallenges> GetJoinedChallengesAsync(int userId);
 		Task<PelotonUserChallengeDetail> GetUserChallengeDetailsAsync(int userId, string challengeId);
+		Task<RideSegments> GetClassSegmentsAsync(string rideId);
 	}
 
 	public class ApiClient : IPelotonApi
@@ -98,7 +99,7 @@ namespace Peloton
 				limit = pageSize,
 				sort_by = "-created",
 				page = page,
-				joins= "ride"
+				joins= "ride,ride.instructor"
 			})
 			.StripSensitiveDataFromLogging(auth.Email, auth.Password)
 			.GetJsonAsync<PagedPelotonResponse<Workout>>();
@@ -201,6 +202,16 @@ namespace Peloton
 				.WithCommonHeaders()
 				.StripSensitiveDataFromLogging(auth.Email, auth.Password)
 				.GetJsonAsync<PelotonUserChallengeDetail>();
+		}
+
+		public async Task<RideSegments> GetClassSegmentsAsync(string rideId)
+		{
+			var auth = await GetAuthAsync();
+			return await $"{BaseUrl}/ride/{rideId}/details"
+				.WithCookie("peloton_session_id", auth.SessionId)
+				.WithCommonHeaders()
+				.StripSensitiveDataFromLogging(auth.Email, auth.Password)
+				.GetJsonAsync<RideSegments>();
 		}
 	}
 }
